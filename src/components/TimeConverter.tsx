@@ -5,9 +5,7 @@ import {
   Clock,
   Copy,
   Check,
-  RotateCcw,
-  Sun,
-  Moon
+  RotateCcw
 } from 'lucide-react';
 import {
   ZonedTimeDetails,
@@ -38,6 +36,7 @@ export const TimeConverter: React.FC<TimeConverterProps> = ({
   onResetToCurrent,
 }) => {
   const [copied, setCopied] = useState(false);
+  const [isRotating, setIsRotating] = useState(false);
 
   const isBdSource = direction === 'dhakaToMel';
 
@@ -81,6 +80,12 @@ export const TimeConverter: React.FC<TimeConverterProps> = ({
     }
   };
 
+  const handleSwapClick = () => {
+    setIsRotating(true);
+    onToggleDirection();
+    setTimeout(() => setIsRotating(false), 300);
+  };
+
   const activeSliderMins = isBdSource
     ? bdDetails.hours24 * 60 + bdDetails.minutes
     : melDetails.hours24 * 60 + melDetails.minutes;
@@ -101,18 +106,254 @@ export const TimeConverter: React.FC<TimeConverterProps> = ({
   };
 
   const bdPresets = [
-    { label: '09:00 AM (Start)', time: '09:00' },
-    { label: '01:00 PM (Lunch)', time: '13:00' },
-    { label: '05:00 PM (COB)', time: '17:00' },
-    { label: '08:00 PM (Night)', time: '20:00' },
+    { label: '09:00 AM', time: '09:00' },
+    { label: '01:00 PM', time: '13:00' },
+    { label: '05:00 PM', time: '17:00' },
+    { label: '08:00 PM', time: '20:00' },
   ];
 
   const melPresets = [
-    { label: '09:00 AM (Start)', time: '09:00' },
-    { label: '02:00 PM (Midday)', time: '14:00' },
-    { label: '05:00 PM (COB)', time: '17:00' },
-    { label: '09:00 PM (Night)', time: '21:00' },
+    { label: '09:00 AM', time: '09:00' },
+    { label: '02:00 PM', time: '14:00' },
+    { label: '05:00 PM', time: '17:00' },
+    { label: '09:00 PM', time: '21:00' },
   ];
+
+  // Render Bangladesh Card Component
+  const renderBangladeshCard = (isPrimarySlot: boolean) => (
+    <div
+      key="card-bangladesh"
+      className={`rounded-2xl p-4 sm:p-6 border transition-all duration-300 ${
+        isPrimarySlot
+          ? 'bg-slate-50/90 border-indigo-500/50 ring-2 ring-indigo-500/10 shadow-xs'
+          : 'bg-slate-50/50 border-slate-200'
+      }`}
+    >
+      <div className="flex items-center justify-between mb-3.5">
+        <div className="flex items-center gap-2.5">
+          <span className="text-2xl sm:text-3xl" role="img" aria-label="Bangladesh flag">🇧🇩</span>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">Bangladesh</h3>
+              {isPrimarySlot && (
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white px-1.5 py-0.5 rounded">
+                  Source
+                </span>
+              )}
+            </div>
+            <span className="text-xs text-slate-500 font-medium">Dhaka Standard Time (BST)</span>
+          </div>
+        </div>
+        <span className="text-xs font-mono font-bold text-slate-700 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs">
+          {bdDetails.offsetString}
+        </span>
+      </div>
+
+      {/* Date Picker */}
+      <div className="mb-3">
+        <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+          Date
+        </label>
+        <div className="relative">
+          <input
+            type="date"
+            value={bdDetails.dateStr}
+            onChange={(e) => onUpdateFromBd(e.target.value, bdDetails.formattedTime24)}
+            className="w-full min-h-[44px] px-3 py-2 pl-9 text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 font-mono text-slate-900 cursor-pointer"
+          />
+          <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-3.5 pointer-events-none" />
+        </div>
+      </div>
+
+      {/* Time Input */}
+      <div className="mb-3">
+        <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+          Time
+        </label>
+        <div className="relative">
+          <input
+            type="time"
+            value={bdDetails.formattedTime24}
+            onChange={(e) => onUpdateFromBd(bdDetails.dateStr, e.target.value || '12:00')}
+            className="w-full min-h-[50px] px-3 py-2 pl-9 text-2xl sm:text-3xl font-extrabold bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 font-mono text-slate-900 cursor-pointer tabular-nums"
+          />
+          <Clock className="w-5 h-5 text-slate-400 absolute left-3 top-4 pointer-events-none" />
+        </div>
+      </div>
+
+      {/* Fluid Steppers */}
+      <div className="grid grid-cols-4 gap-1.5 sm:gap-2 mb-3.5">
+        <button
+          type="button"
+          onClick={() => adjustBdMinutes(-60)}
+          className="min-h-[44px] py-1.5 px-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 active:scale-95 transition-all text-center flex items-center justify-center cursor-pointer shadow-2xs"
+        >
+          -1h
+        </button>
+        <button
+          type="button"
+          onClick={() => adjustBdMinutes(-30)}
+          className="min-h-[44px] py-1.5 px-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 active:scale-95 transition-all text-center flex items-center justify-center cursor-pointer shadow-2xs"
+        >
+          -30m
+        </button>
+        <button
+          type="button"
+          onClick={() => adjustBdMinutes(30)}
+          className="min-h-[44px] py-1.5 px-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 active:scale-95 transition-all text-center flex items-center justify-center cursor-pointer shadow-2xs"
+        >
+          +30m
+        </button>
+        <button
+          type="button"
+          onClick={() => adjustBdMinutes(60)}
+          className="min-h-[44px] py-1.5 px-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 active:scale-95 transition-all text-center flex items-center justify-center cursor-pointer shadow-2xs"
+        >
+          +1h
+        </button>
+      </div>
+
+      {/* Presets */}
+      <div className="space-y-1">
+        <span className="text-[11px] font-semibold text-slate-400">Quick Presets:</span>
+        <div className="grid grid-cols-4 gap-1.5">
+          {bdPresets.map((p) => (
+            <button
+              key={p.label}
+              type="button"
+              onClick={() => onUpdateFromBd(bdDetails.dateStr, p.time)}
+              className="min-h-[38px] px-1 py-1 text-[11px] sm:text-xs font-medium bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg transition-all active:scale-95 cursor-pointer shadow-2xs flex items-center justify-center text-center"
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-4 pt-3 border-t border-slate-200/60 flex items-center justify-between text-xs text-slate-600">
+        <span className="font-medium">{bdDetails.formattedDate}</span>
+        <span className="font-semibold text-slate-700">{bdDetails.periodLabel}</span>
+      </div>
+    </div>
+  );
+
+  // Render Melbourne Card Component
+  const renderMelbourneCard = (isPrimarySlot: boolean) => (
+    <div
+      key="card-melbourne"
+      className={`rounded-2xl p-4 sm:p-6 border transition-all duration-300 ${
+        isPrimarySlot
+          ? 'bg-indigo-50/60 border-indigo-500/50 ring-2 ring-indigo-500/10 shadow-xs'
+          : 'bg-indigo-50/20 border-indigo-100'
+      }`}
+    >
+      <div className="flex items-center justify-between mb-3.5">
+        <div className="flex items-center gap-2.5">
+          <span className="text-2xl sm:text-3xl" role="img" aria-label="Australia flag">🇦🇺</span>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">Melbourne</h3>
+              {isPrimarySlot && (
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-indigo-600 text-white px-1.5 py-0.5 rounded">
+                  Source
+                </span>
+              )}
+            </div>
+            <span className="text-xs text-slate-500 font-medium">Victoria, Australia</span>
+          </div>
+        </div>
+        <span className="text-xs font-mono font-bold text-indigo-900 bg-white px-2.5 py-1 rounded-lg border border-indigo-200 shadow-2xs">
+          {melDetails.timeZoneAbbr} ({melDetails.offsetString})
+        </span>
+      </div>
+
+      {/* Date Picker */}
+      <div className="mb-3">
+        <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+          Date
+        </label>
+        <div className="relative">
+          <input
+            type="date"
+            value={melDetails.dateStr}
+            onChange={(e) => onUpdateFromMel(e.target.value, melDetails.formattedTime24)}
+            className="w-full min-h-[44px] px-3 py-2 pl-9 text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 font-mono text-slate-900 cursor-pointer"
+          />
+          <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-3.5 pointer-events-none" />
+        </div>
+      </div>
+
+      {/* Time Input */}
+      <div className="mb-3">
+        <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+          Time
+        </label>
+        <div className="relative">
+          <input
+            type="time"
+            value={melDetails.formattedTime24}
+            onChange={(e) => onUpdateFromMel(melDetails.dateStr, e.target.value || '12:00')}
+            className="w-full min-h-[50px] px-3 py-2 pl-9 text-2xl sm:text-3xl font-extrabold bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 font-mono text-slate-900 cursor-pointer tabular-nums"
+          />
+          <Clock className="w-5 h-5 text-slate-400 absolute left-3 top-4 pointer-events-none" />
+        </div>
+      </div>
+
+      {/* Fluid Steppers */}
+      <div className="grid grid-cols-4 gap-1.5 sm:gap-2 mb-3.5">
+        <button
+          type="button"
+          onClick={() => adjustMelMinutes(-60)}
+          className="min-h-[44px] py-1.5 px-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 active:scale-95 transition-all text-center flex items-center justify-center cursor-pointer shadow-2xs"
+        >
+          -1h
+        </button>
+        <button
+          type="button"
+          onClick={() => adjustMelMinutes(-30)}
+          className="min-h-[44px] py-1.5 px-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 active:scale-95 transition-all text-center flex items-center justify-center cursor-pointer shadow-2xs"
+        >
+          -30m
+        </button>
+        <button
+          type="button"
+          onClick={() => adjustMelMinutes(30)}
+          className="min-h-[44px] py-1.5 px-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 active:scale-95 transition-all text-center flex items-center justify-center cursor-pointer shadow-2xs"
+        >
+          +30m
+        </button>
+        <button
+          type="button"
+          onClick={() => adjustMelMinutes(60)}
+          className="min-h-[44px] py-1.5 px-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 active:scale-95 transition-all text-center flex items-center justify-center cursor-pointer shadow-2xs"
+        >
+          +1h
+        </button>
+      </div>
+
+      {/* Presets */}
+      <div className="space-y-1">
+        <span className="text-[11px] font-semibold text-slate-400">Quick Presets:</span>
+        <div className="grid grid-cols-4 gap-1.5">
+          {melPresets.map((p) => (
+            <button
+              key={p.label}
+              type="button"
+              onClick={() => onUpdateFromMel(melDetails.dateStr, p.time)}
+              className="min-h-[38px] px-1 py-1 text-[11px] sm:text-xs font-medium bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg transition-all active:scale-95 cursor-pointer shadow-2xs flex items-center justify-center text-center"
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-4 pt-3 border-t border-slate-200/60 flex items-center justify-between text-xs text-slate-600">
+        <span className="font-medium">{melDetails.formattedDate}</span>
+        <span className="font-semibold text-slate-700">{melDetails.periodLabel}</span>
+      </div>
+    </div>
+  );
 
   return (
     <section className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 shadow-xs p-4 sm:p-6 lg:p-8 space-y-6">
@@ -123,7 +364,7 @@ export const TimeConverter: React.FC<TimeConverterProps> = ({
             Bidirectional Time Converter
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Adjust either Bangladesh or Melbourne time to instantly compute the other.
+            Click the swap button below or choose a tab to switch country order.
           </p>
         </div>
 
@@ -159,7 +400,7 @@ export const TimeConverter: React.FC<TimeConverterProps> = ({
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              Active Conversion
+              Active Conversion ({isBdSource ? 'Bangladesh ➔ Melbourne' : 'Melbourne ➔ Bangladesh'})
             </div>
 
             <div className="flex flex-wrap items-center gap-2 text-xl sm:text-3xl font-extrabold tracking-tight font-mono">
@@ -225,231 +466,28 @@ export const TimeConverter: React.FC<TimeConverterProps> = ({
         </div>
       </div>
 
-      {/* Dual Interactive Input Panels - Fluid 2-column or stacked grid */}
+      {/* Dual Interactive Input Panels - Dynamically swapped when user clicks Swap button! */}
       <div className="relative">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 items-stretch">
-          {/* Bangladesh Card */}
-          <div className={`rounded-2xl p-4 sm:p-6 border transition-all ${
-            isBdSource
-              ? 'bg-slate-50/90 border-indigo-500/50 ring-2 ring-indigo-500/10 shadow-xs'
-              : 'bg-slate-50/50 border-slate-200'
-          }`}>
-            <div className="flex items-center justify-between mb-3.5">
-              <div className="flex items-center gap-2.5">
-                <span className="text-2xl sm:text-3xl" role="img" aria-label="Bangladesh flag">🇧🇩</span>
-                <div>
-                  <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">Bangladesh</h3>
-                  <span className="text-xs text-slate-500 font-medium">Dhaka (BST)</span>
-                </div>
-              </div>
-              <span className="text-xs font-mono font-bold text-slate-700 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs">
-                {bdDetails.offsetString}
-              </span>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 items-stretch transition-all duration-300">
+          {/* Card 1 (Left / Source Country) */}
+          {isBdSource ? renderBangladeshCard(true) : renderMelbourneCard(true)}
 
-            {/* Date Picker */}
-            <div className="mb-3">
-              <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
-                Date
-              </label>
-              <div className="relative">
-                <input
-                  type="date"
-                  value={bdDetails.dateStr}
-                  onChange={(e) => onUpdateFromBd(e.target.value, bdDetails.formattedTime24)}
-                  className="w-full min-h-[44px] px-3 py-2 pl-9 text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 font-mono text-slate-900 cursor-pointer"
-                />
-                <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-3.5 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Time Input */}
-            <div className="mb-3">
-              <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
-                Time
-              </label>
-              <div className="relative">
-                <input
-                  type="time"
-                  value={bdDetails.formattedTime24}
-                  onChange={(e) => onUpdateFromBd(bdDetails.dateStr, e.target.value || '12:00')}
-                  className="w-full min-h-[50px] px-3 py-2 pl-9 text-2xl sm:text-3xl font-extrabold bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 font-mono text-slate-900 cursor-pointer tabular-nums"
-                />
-                <Clock className="w-5 h-5 text-slate-400 absolute left-3 top-4 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Fluid Steppers */}
-            <div className="grid grid-cols-4 gap-1.5 sm:gap-2 mb-3.5">
-              <button
-                type="button"
-                onClick={() => adjustBdMinutes(-60)}
-                className="min-h-[44px] py-1.5 px-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 active:scale-95 transition-all text-center flex items-center justify-center cursor-pointer shadow-2xs"
-              >
-                -1h
-              </button>
-              <button
-                type="button"
-                onClick={() => adjustBdMinutes(-30)}
-                className="min-h-[44px] py-1.5 px-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 active:scale-95 transition-all text-center flex items-center justify-center cursor-pointer shadow-2xs"
-              >
-                -30m
-              </button>
-              <button
-                type="button"
-                onClick={() => adjustBdMinutes(30)}
-                className="min-h-[44px] py-1.5 px-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 active:scale-95 transition-all text-center flex items-center justify-center cursor-pointer shadow-2xs"
-              >
-                +30m
-              </button>
-              <button
-                type="button"
-                onClick={() => adjustBdMinutes(60)}
-                className="min-h-[44px] py-1.5 px-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 active:scale-95 transition-all text-center flex items-center justify-center cursor-pointer shadow-2xs"
-              >
-                +1h
-              </button>
-            </div>
-
-            {/* Presets */}
-            <div className="space-y-1">
-              <span className="text-[11px] font-semibold text-slate-400">Presets:</span>
-              <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                {bdPresets.map((p) => (
-                  <button
-                    key={p.label}
-                    type="button"
-                    onClick={() => onUpdateFromBd(bdDetails.dateStr, p.time)}
-                    className="min-h-[38px] px-2.5 py-1 text-xs font-medium bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg transition-all active:scale-95 cursor-pointer shadow-2xs flex items-center justify-center"
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-4 pt-3 border-t border-slate-200/60 flex items-center justify-between text-xs text-slate-600">
-              <span className="font-medium">{bdDetails.formattedDate}</span>
-              <span className="font-semibold text-slate-700">{bdDetails.periodLabel}</span>
-            </div>
-          </div>
-
-          {/* Melbourne Card */}
-          <div className={`rounded-2xl p-4 sm:p-6 border transition-all ${
-            !isBdSource
-              ? 'bg-indigo-50/60 border-indigo-500/50 ring-2 ring-indigo-500/10 shadow-xs'
-              : 'bg-indigo-50/20 border-indigo-100'
-          }`}>
-            <div className="flex items-center justify-between mb-3.5">
-              <div className="flex items-center gap-2.5">
-                <span className="text-2xl sm:text-3xl" role="img" aria-label="Australia flag">🇦🇺</span>
-                <div>
-                  <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">Melbourne</h3>
-                  <span className="text-xs text-slate-500 font-medium">Victoria, Australia</span>
-                </div>
-              </div>
-              <span className="text-xs font-mono font-bold text-indigo-900 bg-white px-2.5 py-1 rounded-lg border border-indigo-200 shadow-2xs">
-                {melDetails.timeZoneAbbr} ({melDetails.offsetString})
-              </span>
-            </div>
-
-            {/* Date Picker */}
-            <div className="mb-3">
-              <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
-                Date
-              </label>
-              <div className="relative">
-                <input
-                  type="date"
-                  value={melDetails.dateStr}
-                  onChange={(e) => onUpdateFromMel(e.target.value, melDetails.formattedTime24)}
-                  className="w-full min-h-[44px] px-3 py-2 pl-9 text-sm bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 font-mono text-slate-900 cursor-pointer"
-                />
-                <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-3.5 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Time Input */}
-            <div className="mb-3">
-              <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
-                Time
-              </label>
-              <div className="relative">
-                <input
-                  type="time"
-                  value={melDetails.formattedTime24}
-                  onChange={(e) => onUpdateFromMel(melDetails.dateStr, e.target.value || '12:00')}
-                  className="w-full min-h-[50px] px-3 py-2 pl-9 text-2xl sm:text-3xl font-extrabold bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 font-mono text-slate-900 cursor-pointer tabular-nums"
-                />
-                <Clock className="w-5 h-5 text-slate-400 absolute left-3 top-4 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Fluid Steppers */}
-            <div className="grid grid-cols-4 gap-1.5 sm:gap-2 mb-3.5">
-              <button
-                type="button"
-                onClick={() => adjustMelMinutes(-60)}
-                className="min-h-[44px] py-1.5 px-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 active:scale-95 transition-all text-center flex items-center justify-center cursor-pointer shadow-2xs"
-              >
-                -1h
-              </button>
-              <button
-                type="button"
-                onClick={() => adjustMelMinutes(-30)}
-                className="min-h-[44px] py-1.5 px-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 active:scale-95 transition-all text-center flex items-center justify-center cursor-pointer shadow-2xs"
-              >
-                -30m
-              </button>
-              <button
-                type="button"
-                onClick={() => adjustMelMinutes(30)}
-                className="min-h-[44px] py-1.5 px-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 active:scale-95 transition-all text-center flex items-center justify-center cursor-pointer shadow-2xs"
-              >
-                +30m
-              </button>
-              <button
-                type="button"
-                onClick={() => adjustMelMinutes(60)}
-                className="min-h-[44px] py-1.5 px-2 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 rounded-xl border border-slate-200 active:scale-95 transition-all text-center flex items-center justify-center cursor-pointer shadow-2xs"
-              >
-                +1h
-              </button>
-            </div>
-
-            {/* Presets */}
-            <div className="space-y-1">
-              <span className="text-[11px] font-semibold text-slate-400">Presets:</span>
-              <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                {melPresets.map((p) => (
-                  <button
-                    key={p.label}
-                    type="button"
-                    onClick={() => onUpdateFromMel(melDetails.dateStr, p.time)}
-                    className="min-h-[38px] px-2.5 py-1 text-xs font-medium bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-lg transition-all active:scale-95 cursor-pointer shadow-2xs flex items-center justify-center"
-                  >
-                    {p.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-4 pt-3 border-t border-slate-200/60 flex items-center justify-between text-xs text-slate-600">
-              <span className="font-medium">{melDetails.formattedDate}</span>
-              <span className="font-semibold text-slate-700">{melDetails.periodLabel}</span>
-            </div>
-          </div>
+          {/* Card 2 (Right / Target Country) */}
+          {isBdSource ? renderMelbourneCard(false) : renderBangladeshCard(false)}
         </div>
 
-        {/* Center Floating/Inline Swap Button */}
+        {/* Center Swap Button (Always prominent in the center, switches country positions!) */}
         <div className="flex justify-center my-3 md:my-0 md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:z-10">
           <button
             type="button"
-            onClick={onToggleDirection}
-            className="w-12 h-12 rounded-full bg-slate-900 hover:bg-slate-800 text-white flex items-center justify-center shadow-lg transition-all active:scale-90 cursor-pointer ring-4 ring-white"
-            title="Swap conversion direction"
+            onClick={handleSwapClick}
+            className={`w-14 h-14 rounded-full bg-slate-900 hover:bg-indigo-600 text-white flex flex-col items-center justify-center shadow-xl transition-all duration-300 active:scale-90 cursor-pointer ring-4 ring-white ${
+              isRotating ? 'rotate-180 scale-110 bg-indigo-600' : ''
+            }`}
+            title="Click to switch countries & conversion direction"
           >
-            <ArrowRightLeft className="w-5 h-5" />
+            <ArrowRightLeft className={`w-5 h-5 transition-transform duration-300 ${isRotating ? 'scale-125' : ''}`} />
+            <span className="text-[8px] font-bold tracking-widest mt-0.5">SWAP</span>
           </button>
         </div>
       </div>

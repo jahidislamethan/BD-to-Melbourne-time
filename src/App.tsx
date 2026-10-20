@@ -95,6 +95,8 @@ export default function App() {
           is24Hour={is24Hour}
           timeDiffDescription={diffSummary.description}
           hoursDiff={diffSummary.hoursDifference}
+          direction={direction}
+          onToggleDirection={handleToggleDirection}
         />
 
         {/* 2. Interactive Time Converter */}

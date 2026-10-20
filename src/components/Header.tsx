@@ -1,5 +1,6 @@
 import React from 'react';
 import { RefreshCw } from 'lucide-react';
+import { AppIcon } from './AppIcon';
 
 interface HeaderProps {
   is24Hour: boolean;
@@ -15,11 +16,9 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-4 sm:px-6 lg:px-8 py-2.5">
       <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
-        {/* Brand / App Title */}
+        {/* Brand / App Title with AppIcon */}
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-sm shadow-xs ring-1 ring-slate-800">
-            ⇄
-          </div>
+          <AppIcon size={40} className="shadow-xs rounded-xl" />
           <div>
             <div className="text-base font-extrabold tracking-tight text-slate-900 leading-tight">
               BD <span className="text-indigo-600 font-normal">⇄</span> Melbourne
