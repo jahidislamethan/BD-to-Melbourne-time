@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e1b4b"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <!-- Background with squircle radius -->
+  <rect width="512" height="512" rx="128" fill="url(#bg)"/>
+  
+  <!-- Outer glowing clock ring -->
+  <circle cx="256" cy="256" r="160" fill="none" stroke="#312e81" stroke-width="16"/>
+  <circle cx="256" cy="256" r="160" fill="none" stroke="url(#accent)" stroke-width="16" stroke-dasharray="250 500" stroke-linecap="round"/>
+  
+  <!-- Center time bridge badge -->
+  <circle cx="256" cy="256" r="100" fill="#1e293b"/>
+  
+  <!-- Double swap arrows -->
+  <path d="M190 220 L310 220 M275 185 L310 220 L275 255" fill="none" stroke="#38bdf8" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M322 292 L202 292 M237 257 L202 292 L237 327" fill="none" stroke="#34d399" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Subtle flag dots -->
+  <circle cx="160" cy="140" r="14" fill="#10b981"/>
+  <circle cx="160" cy="140" r="7" fill="#ef4444"/>
+  <circle cx="352" cy="140" r="14" fill="#3b82f6"/>
+</svg>

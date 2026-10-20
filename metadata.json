@@ -1,0 +1,6 @@
+{
+  "name": "Bangladesh & Melbourne Time Converter",
+  "description": "Convert time between Bangladesh (BST) and Melbourne, Australia (AEST/AEDT) with live clocks, interactive timeline, meeting planner, and daylight saving time tracker.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
